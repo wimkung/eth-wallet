@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/wimkung/eth-wallet/issues"
   },
-  "homepage": "https://github.com/wimkung/eth-wallet#readme"
+  "homepage": "https://github.com/wimkung/eth-wallet#readme",
+  "dependencies": {
+    "ethereumjs-util": "^6.0.0",
+    "ethereumjs-wallet": "^0.6.3"
+  }
 }
