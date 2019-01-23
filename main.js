@@ -1,13 +1,9 @@
-const Wallet = require('ethereumjs-wallet');
-const EthUtil = require('ethereumjs-util');
+const hdkey = require('ethereumjs-wallet/hdkey');
+require('dotenv').config();
 
 (() => {
-  const privateKeyString = '0x61ce8b95ca5fd6f55cd97ac60817777bdf64f1670e903758ce53efc32c3dffeb';
-  const privateKeyBuffer = EthUtil.toBuffer(privateKeyString);
-  const wallet = Wallet.fromPrivateKey(privateKeyBuffer);
+  const xPrivateKey = process.env.X_PRI_KEY
+  const hdwallet = hdkey.fromExtendedKey(xPrivateKey)
 
-  const publicKey = wallet.getPublicKeyString();
-  console.log(publicKey);
-  const address = wallet.getAddressString();
-  console.log(address);
+  console.log(hdwallet.deriveChild(0).getWallet().getAddressString())
 })()
