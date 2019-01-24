@@ -11,7 +11,6 @@ const newAddress = async (req, h) => {
       .exec();
     const lastIndex = lastAddress ? lastAddress.index : -1;
     const index = lastIndex + 1;
-    console.log({ lastIndex, index });
     let address = '';
     if (symbol === 'ETH') {
       address = ethService.getAddress(index);

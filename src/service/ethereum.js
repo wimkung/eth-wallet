@@ -9,7 +9,7 @@ const xPrivateKey = process.env.X_PRI_KEY
 const hdwallet = hdkey.fromExtendedKey(xPrivateKey)
 
 const getAddress = index => {
-  return hdwallet.deriveChild(index).getWallet().getAddressString()
+  return hdwallet.deriveChild(index).getWallet().getChecksumAddressString()
 }
 
 module.exports = {

@@ -11,6 +11,8 @@ require('dotenv').config({
 const router = require('./routes');
 const handler = require('./handler');
 const plugin = require('./plugins');
+const worker = require('./worker');
+const seed = require('./seed/configuration');
 
 const server = hapi.server({
   port: process.env.SERVER_PORT,
@@ -27,6 +29,10 @@ const init = async () => {
   await handler(server);
   await server.start();
   console.log(`Server running at : ${server.info.uri}`);
+
+  await seed();
+  worker();
+
 };
 
 server.events.on('log', (event, tags) => {

@@ -16,9 +16,9 @@ module.exports = async () => {
     dbOptions
   );
 
-  if (process.env.NODE_ENV !== 'production') {
-    mongoose.set('debug', true);
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   mongoose.set('debug', true);
+  // }
 
   mongoose.connection.on(
     'error',

@@ -6,7 +6,7 @@ const AddressSchema = new Schema(
   {
     symbol: {
       type: String,
-      default: 'ETH'
+      required: true
     },
     index: {
       type: Number,
@@ -15,7 +15,8 @@ const AddressSchema = new Schema(
     address: {
       type: String,
       unique: true,
-      index: true
+      index: true,
+      required: true
     },
     user: {
       type: String,
