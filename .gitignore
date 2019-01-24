@@ -1,6 +1,9 @@
-
-\.idea/
-
-node_modules/
-
-\.env
+node_modules
+.idea
+yarn-error.log
+.env
+yarn.lock
+package-lock.json
+mongo
+shipit/config
+shipit/workspace
