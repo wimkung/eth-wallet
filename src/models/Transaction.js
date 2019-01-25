@@ -21,6 +21,10 @@ const TransactionSchema = new Schema(
       required: true
     },
     meta: Object,
+    confirm: {
+      type: Number,
+      default: 1
+    },
     status: {
       type: Number,
       default: 0

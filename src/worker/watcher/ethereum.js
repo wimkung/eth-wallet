@@ -28,7 +28,13 @@ module.exports = async () => {
         console.log(`ETH #${blockHeight} --> #${networkState}`);
         const tx = await getTransactionFromBlock(blockHeight);
         const filterTx = await filterTransaction(tx);
-        const transactions = await saveTransaction(filterTx);
+        const confirmTransactions = await upDateConfirm(blockHeight);
+        const newTransactions = await saveTransaction(filterTx);
+
+        const transactions = {
+          ...confirmTransactions,
+          new: newTransactions
+        };
 
         console.log(transactions);
 
@@ -44,6 +50,7 @@ module.exports = async () => {
       console.log(e);
       return 0;
     }
+    break;
   } while (blockHeight <= networkState + 1);
 
   console.log('ETH watcher stopped');
@@ -93,11 +100,35 @@ const saveTransaction = async txs => {
   return await Promise.all(
     _.map(txs, async tx => {
       const address = await Address.findOne({ address: tx.to });
-      return await Transaction.findOrCreate(
-        { txId: tx.txId },
-        { ...tx, address: address._id }
-      );
+      let transaction = await Transaction.findOne({ txId: tx.txId });
+      transaction = transaction
+        ? transaction
+        : await Transaction.create({ ...tx, address: address._id });
+      return transaction;
     })
   );
 };
 
+const upDateConfirm = async blockHeight => {
+  const txs = _.filter(
+    await Transaction.find({ status: 0, symbol: 'ETH' }),
+    tx => tx.meta.in + tx.confirm === blockHeight
+  );
+  const updatedTxs = await Promise.all(
+    _.map(txs, async tx => {
+      tx.confirm++;
+      if (tx.confirm >= (process.env.BLOCK_CONFIRM || 6)) {
+        tx.status = 1;
+      }
+      await tx.save();
+      return tx;
+    })
+  );
+  const unAccept = _.filter(
+    updatedTxs,
+    tx => tx.confirm < (process.env.BLOCK_CONFIRM || 6)
+  );
+  const accept = _.filter(updatedTxs, tx => tx.status === 1);
+
+  return { unAccept, accept };
+};
