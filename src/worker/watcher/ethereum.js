@@ -57,7 +57,12 @@ module.exports = async () => {
 };
 
 const getNetworkState = async () => {
-  return await web3.eth.getBlockNumber();
+  try {
+    return await web3.eth.getBlockNumber();
+  } catch (e) {
+    console.log(e);
+    return -1;
+  }
 };
 
 const getTransactionFromBlock = async (blockHeight = 0) => {
@@ -88,6 +93,23 @@ const getTransactionFromBlock = async (blockHeight = 0) => {
   });
 };
 
+const getTxIdFromBlock = async blockHeight => {
+  let block;
+
+  try {
+    block = await web3.eth.getBlock(blockHeight, false);
+  } catch (e) {
+    throw e;
+  }
+
+  if (_.isNull(block)) {
+    console.log(`Block #${blockHeight} is null`);
+    return null;
+  }
+
+  return block.transactions;
+};
+
 const filterTransaction = async txs => {
   const addresses = _.map(
     await Address.find({ symbol: 'ETH' }).select('address -_id'),
@@ -97,16 +119,20 @@ const filterTransaction = async txs => {
 };
 
 const saveTransaction = async txs => {
-  return await Promise.all(
-    _.map(txs, async tx => {
-      const address = await Address.findOne({ address: tx.to });
-      let transaction = await Transaction.findOne({ txId: tx.txId });
-      transaction = transaction
-        ? transaction
-        : await Transaction.create({ ...tx, address: address._id });
-      return transaction;
-    })
-  );
+  try {
+    return await Promise.all(
+      _.map(txs, async tx => {
+        const address = await Address.findOne({ address: tx.to });
+        let transaction = await Transaction.findOne({ txId: tx.txId });
+        transaction =
+          transaction ||
+          (await Transaction.create({ ...tx, address: address._id }));
+        return transaction;
+      })
+    );
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 const upDateConfirm = async blockHeight => {
@@ -128,7 +154,27 @@ const upDateConfirm = async blockHeight => {
     updatedTxs,
     tx => tx.confirm < (process.env.BLOCK_CONFIRM || 6)
   );
-  const accept = _.filter(updatedTxs, tx => tx.status === 1);
+  const oldBlockHeight = blockHeight - (process.env.BLOCK_CONFIRM || 6) + 1;
+  const oldTxid = await getTxIdFromBlock(oldBlockHeight);
+  const accept = _.filter(
+    updatedTxs,
+    tx =>
+      tx.status === 1 &&
+      tx.meta.in === oldBlockHeight &&
+      oldTxid.includes(tx.txId)
+  );
+  const reject = _.filter(
+    updatedTxs,
+    tx =>
+      tx.status === 1 &&
+      tx.meta.in === oldBlockHeight &&
+      !oldTxid.includes(tx.txId)
+  );
+  await Promise.all(
+    _.map(reject, async tx => {
+      await tx.delete();
+    })
+  );
 
-  return { unAccept, accept };
+  return { unAccept, accept, reject };
 };
