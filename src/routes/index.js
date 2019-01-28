@@ -1,4 +1,5 @@
 const accountRoute = require('../modules/account/route');
+const withdrawRoute = require('../modules/withdraw/route');
 
 const router = server => {
   server.route({
@@ -10,6 +11,7 @@ const router = server => {
   });
 
   accountRoute(server);
+  withdrawRoute(server);
 };
 
 module.exports = router;
