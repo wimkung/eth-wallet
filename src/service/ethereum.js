@@ -102,7 +102,6 @@ const waitForMined = async txId => {
       await sleep(checkInterval)
       continue;
     }
-
     return tx;
   }
 
